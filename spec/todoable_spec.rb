@@ -86,13 +86,13 @@ RSpec.describe "Lists" do
     # other tests in this class
     stub_request(:post, @todoable.api_uri(Todoable::AUTH_PATH))
       .with(headers: default_headers)
-      .to_return(body: '{ "token": "Very Secret Token" }')
+      .to_return(body: '{ "token": "token" }')
   end
 
   it "works with no lists" do
     # Given that the lists endpoint is stubbed to return no lists
     stub_request(:get, @todoable.api_uri(Todoable::LISTS_PATH))
-      .with(headers: auth_headers('Very Secret Token'))
+      .with(headers: auth_headers('token'))
       .to_return(body: '[]')
 
     # When it tries to retrieve lists
@@ -105,12 +105,10 @@ RSpec.describe "Lists" do
   it "retrieve lists" do
     # Given that the lists endpoint is stubbed to return a single list
     stub_request(:get, @todoable.api_uri(Todoable::LISTS_PATH))
-      .with(headers: auth_headers('Very Secret Token'))
-      .to_return(body: '[{' \
-                       '  "name": "Urgent Things",' \
+      .with(headers: auth_headers('token'))
+      .to_return(body: '[{"name": "Urgent Things",' \
                        '  "src":  "http://todoable.teachable.tech/api/lists/:list_id",' \
-                       '  "id":  44' \
-                       '}]')
+                       '  "id":  44}]')
 
     # When it tries to retrieve lists
     lists = @todoable.lists()
@@ -123,11 +121,11 @@ RSpec.describe "Lists" do
     expect(lists[0].id).to eql(44)
   end
 
-  it "create lists" do
+  it "create new lists" do
     # Given that the method POST of the lists endpoint is stubbed like
     # the following:
     stub_request(:post, @todoable.api_uri(Todoable::LISTS_PATH))
-      .with(headers: auth_headers('Very Secret Token'))
+      .with(headers: auth_headers('token'))
       .to_return(status: 200)
 
     # When a new list is added to the todo instance
@@ -136,11 +134,11 @@ RSpec.describe "Lists" do
     # Then the post should have been performed against the lists path
     expect(WebMock).to(
       have_requested(:post, @todoable.api_uri(Todoable::LISTS_PATH))
-        .with(headers: auth_headers('Very Secret Token'),
+        .with(headers: auth_headers('token'),
               body: {"list": {"name": "Fun things"}}.to_json))
   end
 
-  it "update a list" do
+  it "updates a list" do
     # Given a list
     list = Todoable::List.new @todoable, {
       'name' => 'foo',
@@ -151,7 +149,7 @@ RSpec.describe "Lists" do
     # And given that the method PATCH of the lists endpoint is stubbed
     # like the following:
     stub_request(:patch, list.src)
-      .with(headers: auth_headers('Very Secret Token'))
+      .with(headers: auth_headers('token'))
       .to_return(status: 200)
 
     # When the list is updated
@@ -160,7 +158,30 @@ RSpec.describe "Lists" do
     # Then it's expected
     expect(WebMock).to(
       have_requested(:patch, list.src).with(
-        headers: auth_headers('Very Secret Token'),
+        headers: auth_headers('token'),
         body: {"list": {"name": "bar"}}.to_json))
+  end
+
+  it "deletes a list" do
+    # Given a list
+    list = Todoable::List.new @todoable, {
+      'name' => 'foo',
+      'src' => @todoable.api_uri(Todoable::LIST_PATH, {:list_id => 42}),
+      'id' => 42
+    }
+
+    # And given that the method DELETE of the lists endpoint is stubbed
+    # like the following:
+    stub_request(:delete, list.src)
+      .with(headers: auth_headers('token'))
+      .to_return(status: 200)
+
+    # When the list is updated
+    list.delete()
+
+    # Then it's expected
+    expect(WebMock).to(
+      have_requested(:delete, list.src).with(
+        headers: auth_headers('token')))
   end
 end

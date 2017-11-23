@@ -23,6 +23,10 @@ module Todoable
       body = {"list": {"name": name}}.to_json
       @todoable.request!("patch", LIST_PATH, { :list_id => @id }, body)
     end
+
+    def delete
+      @todoable.request!("delete", LIST_PATH, { :list_id => @id })
+    end
   end
 
   class Todoable
