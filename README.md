@@ -18,6 +18,17 @@ Or install it yourself as:
 
     $ gem install todoable
 
+## What is covered
+
+ * [X] GET    `/lists`
+ * [X] POST   `/lists`
+ * [X] GET    `/lists/:id`
+ * [X] PATCH  `/lists/:id`
+ * [X] DELETE `/lists/:id`
+ * [X] POST   `/lists/:list_id/items`
+ * [X] PUT    `/lists/:list_id/items/:item_id/finish`
+ * [X] DELETE `/lists/:list_id/items/:item_id`
+
 ## Usage
 
 ### Authentication
