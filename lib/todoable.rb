@@ -6,6 +6,9 @@ module Todoable
   AUTH_PATH = "/api/authenticate"
   LISTS_PATH = "/api/lists"
   LIST_PATH = "/api/lists/:list_id"
+  ITEMS_PATH = "/api/lists/:list_id/items"
+  ITEM_PATH = "/api/lists/:list_id/items/:item_id"
+  ITEM_FINISHED_PATH = "/api/lists/:list_id/items/:item_id/finish"
 
   class List
     attr_accessor :name
@@ -26,6 +29,40 @@ module Todoable
 
     def delete
       @todoable.request!("delete", LIST_PATH, { :list_id => @id })
+    end
+
+    def items
+      output = @todoable.request!("get", LIST_PATH, { :list_id => @id })
+      output["list"]['items'].collect { |json_item|
+        Item.new(@todoable, self, json_item)
+      }
+    end
+
+    def new_item(name)
+      body = {"item": {"name": name}}.to_json
+      @todoable.request!("post", ITEMS_PATH, {:list_id => @id}, body)
+    end
+  end
+
+  class Item
+    attr_accessor :name
+    attr_accessor :id
+
+    def initialize(todoable, list, params)
+      @todoable = todoable
+      @list = list
+      @name = params['name']
+      @id = params['id']
+    end
+
+    def mark_finished
+      params = {:list_id => @list.id, :item_id => @id}
+      @todoable.request!("put", ITEM_FINISHED_PATH, params)
+    end
+
+    def delete
+      params = {:list_id => @list.id, :item_id => @id}
+      @todoable.request!("delete", ITEM_PATH, params)
     end
   end
 
@@ -60,8 +97,9 @@ module Todoable
       # Choose method
       request = {
         "get" => Net::HTTP::Get,
-        "post" => Net::HTTP::Post,
         "patch" => Net::HTTP::Patch,
+        "post" => Net::HTTP::Post,
+        "put" => Net::HTTP::Put,
         "delete" => Net::HTTP::Delete,
       }[method].new(uri.request_uri)
 
@@ -76,7 +114,7 @@ module Todoable
       # Perform request and collect response
       http = Net::HTTP.new(uri.host, uri.port)
       body = http.request(request).body
-      JSON.parse(body) if !body.empty?
+      JSON.parse(body) if body != nil && !body.empty?
     end
 
     def authenticate!
