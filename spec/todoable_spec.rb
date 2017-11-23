@@ -211,7 +211,7 @@ RSpec.describe "List Items" do
     stub_request(:get, list.src)
       .with(headers: auth_headers('token'))
       .to_return(status: 200, body: {
-        "list": {
+        "list" => {
           "name" => "Urgent Things",
           "items" => [{
             "name" => "Feed the cat",
