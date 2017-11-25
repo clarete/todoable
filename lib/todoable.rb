@@ -70,8 +70,12 @@ module Todoable
   end
 
   class Todoable
-    def initialize
+
+    attr_accessor :api_base_uri
+
+    def initialize api_uri = nil
       @token = nil
+      @api_base_uri = api_uri || "http://todoable.teachable.tech"
     end
 
     def authenticate user, password
@@ -90,10 +94,6 @@ module Todoable
 
     def new_list(name)
       request!("post", LISTS_PATH, nil, {"list": {"name": name}}.to_json)
-    end
-
-    def api_base_uri
-      "http://todoable.teachable.tech"
     end
 
     def api_uri(path, params = nil)

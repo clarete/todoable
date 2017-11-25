@@ -74,6 +74,25 @@ puts test_todo.lists()[0].name # ===> bar
 
 ```
 
+#### Base API URI
+
+If the `Todoable::Todoable` class is instantiated with no parameters,
+the base API URI defaults to `http://todoable.teachable.tech`. But if
+you need to provide a different host, just instantiate the class
+informing the host you want to target:
+
+```ruby
+require 'todoable'
+
+# Default endpoint
+todo0 = Todoable::Todoable.new
+
+# Custom endpoint
+todo1 = Todoable::Todoable.new "http://localhost:8080"
+```
+
+#### API Coverage
+
 This gem exposes the following API endpoints:
 
  * [X] POST   `/authenticate`

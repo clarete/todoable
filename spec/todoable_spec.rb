@@ -10,6 +10,11 @@ RSpec.describe "Build Endpoints" do
     expect(todoable.api_base_uri).to eql("http://todoable.teachable.tech")
   end
 
+  it "allows different URIs for the API" do
+    todoable = Todoable::Todoable.new("http://localhost")
+    expect(todoable.api_base_uri).to eql("http://localhost")
+  end
+
   it "builds URIs for different API methods" do
     todoable = Todoable::Todoable.new
     expect(todoable.api_uri(Todoable::AUTH_PATH)).to(
