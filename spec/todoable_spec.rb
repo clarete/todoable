@@ -57,6 +57,24 @@ RSpec.describe "Authentication" do
         .with(headers: default_headers))
   end
 
+  it "should raise AuthError if user or password doesn't match (401)" do
+    # Given an instance of the API wrapper
+    todoable = Todoable::Todoable.new
+
+    # And given that the endpoint is stubbed
+    stub_request(:post, todoable.api_uri(Todoable::AUTH_PATH))
+      .with(headers: default_headers)
+      .to_return(status: 401)
+
+    # When the client tries to authenticate
+    expect { todoable.authenticate "user", "password" }.to raise_error(Todoable::AuthError)
+
+    # Then it should retrieve the auth token
+    expect(WebMock).to(
+      have_requested(:post, todoable.api_uri(Todoable::AUTH_PATH))
+        .with(headers: default_headers))
+  end
+
   it "raises error if other requests happen before authenticating" do
     # Given an instance of the API wrapper
     todo = Todoable::Todoable.new

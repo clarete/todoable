@@ -69,6 +69,9 @@ module Todoable
   class NotAuthenticated < Exception
   end
 
+  class AuthError < Exception
+  end
+
   class Todoable
 
     attr_accessor :api_base_uri
@@ -81,11 +84,19 @@ module Todoable
     def authenticate user, password
       uri = api_uri(AUTH_PATH)
       request = Net::HTTP::Post.new(uri.request_uri)
-      request.basic_auth(user, password)
+
+      # Prepare headers for authentication & JSON
       request.initialize_http_header({})
+      request.basic_auth(user, password)
       request['Accept'] = request['Content-Type'] = 'application/json'
+
+      # Collect response
       http = Net::HTTP.new(uri.host, uri.port)
-      @token = JSON.parse(http.request(request).body)["token"]
+      response = http.request(request)
+      raise AuthError if response.code.to_i == 401
+
+      # Retrieve token from body
+      @token = JSON.parse(response.body)["token"]
     end
 
     def lists
