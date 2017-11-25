@@ -66,11 +66,22 @@ module Todoable
     end
   end
 
+  class NotAuthenticated < Exception
+  end
+
   class Todoable
-    def initialize(user, password)
-      @user = user
-      @password = password
+    def initialize
       @token = nil
+    end
+
+    def authenticate user, password
+      uri = api_uri(AUTH_PATH)
+      request = Net::HTTP::Post.new(uri.request_uri)
+      request.basic_auth(user, password)
+      request.initialize_http_header({})
+      request['Accept'] = request['Content-Type'] = 'application/json'
+      http = Net::HTTP.new(uri.host, uri.port)
+      @token = JSON.parse(http.request(request).body)["token"]
     end
 
     def lists
@@ -92,7 +103,8 @@ module Todoable
     end
 
     def request!(method, uri, params = nil, body = nil)
-      authenticate!
+      raise NotAuthenticated unless @token != nil
+
       uri = api_uri(uri, params)
       # Choose method
       request = {
@@ -115,17 +127,6 @@ module Todoable
       http = Net::HTTP.new(uri.host, uri.port)
       body = http.request(request).body
       JSON.parse(body) if body != nil && !body.empty?
-    end
-
-    def authenticate!
-      return unless @token == nil
-      uri = api_uri(AUTH_PATH)
-      request = Net::HTTP::Post.new(uri.request_uri)
-      request.basic_auth(@user, @password)
-      request.initialize_http_header({})
-      request['Accept'] = request['Content-Type'] = 'application/json'
-      http = Net::HTTP.new(uri.host, uri.port)
-      @token = JSON.parse(http.request(request).body)["token"]
     end
   end
 end

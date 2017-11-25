@@ -26,8 +26,13 @@ class:
 ```ruby
 require 'todoable'
 
-todo = Todoable::Todoable.new("user", "password")
+todo = Todoable::Todoable.new
+todo.authenticate "user", "password"
 ```
+
+If you call any other method from the `Todoable::Todoable` class
+without authenticating, the exception `NotAuthenticated` will be
+raised.
 
 #### Create new lists
 

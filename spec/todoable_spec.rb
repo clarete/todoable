@@ -6,18 +6,18 @@ end
 
 RSpec.describe "Build Endpoints" do
   it "has an API endpoint accessor" do
-    todoable = Todoable::Todoable.new("user", "password")
+    todoable = Todoable::Todoable.new
     expect(todoable.api_base_uri).to eql("http://todoable.teachable.tech")
   end
 
   it "builds URIs for different API methods" do
-    todoable = Todoable::Todoable.new("user", "password")
+    todoable = Todoable::Todoable.new
     expect(todoable.api_uri(Todoable::AUTH_PATH)).to(
       eql(URI("http://todoable.teachable.tech/api/authenticate")))
   end
 
   it "builds endpoints with parameters" do
-    todoable = Todoable::Todoable.new("user", "password")
+    todoable = Todoable::Todoable.new
     expect(todoable.api_uri(Todoable::LIST_PATH, {:list_id => 10})).to(
       eql(URI("http://todoable.teachable.tech/api/lists/10")))
   end
@@ -36,7 +36,7 @@ end
 RSpec.describe "Authentication" do
   it "access the authentication end point" do
     # Given an instance of the API wrapper
-    todoable = Todoable::Todoable.new("user", "password")
+    todoable = Todoable::Todoable.new
 
     # And given that the endpoint is stubbed
     stub_request(:post, todoable.api_uri(Todoable::AUTH_PATH))
@@ -44,7 +44,7 @@ RSpec.describe "Authentication" do
       .to_return(body: '{ "token": "foo" }')
 
     # When the client tries to authenticate
-    todoable.authenticate!
+    todoable.authenticate "user", "password"
 
     # Then it should retrieve the auth token
     expect(WebMock).to(
@@ -52,9 +52,17 @@ RSpec.describe "Authentication" do
         .with(headers: default_headers))
   end
 
+  it "raises error if other requests happen before authenticating" do
+    # Given an instance of the API wrapper
+    todo = Todoable::Todoable.new
+
+    # When an API method is called before authenticating
+    expect { todo.lists() }.to raise_error(Todoable::NotAuthenticated)
+  end
+
   it "use the authentication token in other requests" do
     # Given an instance of the API wrapper
-    todoable = Todoable::Todoable.new("user", "password")
+    todoable = Todoable::Todoable.new
 
     # And given that the authentication endpoint is stubbed
     stub_request(:post, todoable.api_uri(Todoable::AUTH_PATH))
@@ -65,6 +73,9 @@ RSpec.describe "Authentication" do
     stub_request(:get, todoable.api_uri(Todoable::LISTS_PATH))
       .with(headers: auth_headers('Very Secret Token'))
       .to_return(body: '[]')
+
+    # When the authentication is performed
+    todoable.authenticate "user", "password"
 
     # When it tries to retrieve lists for example
     todoable.lists()
@@ -80,13 +91,17 @@ end
 RSpec.describe "Lists" do
   before do
     # Instance that will be the target of all these tests
-    @todoable = Todoable::Todoable.new("user", "password")
+    @todoable = Todoable::Todoable.new
 
     # Stub the request to the auth endpoint that is needed by all
     # other tests in this class
     stub_request(:post, @todoable.api_uri(Todoable::AUTH_PATH))
       .with(headers: default_headers)
       .to_return(body: '{ "token": "token" }')
+
+    # Perform authentication to save the token within an attribute of
+    # the `@todoable` instance
+    @todoable.authenticate "user", "password"
   end
 
   it "works with no lists" do
@@ -189,13 +204,17 @@ end
 RSpec.describe "List Items" do
   before do
     # Instance that will be the target of all these tests
-    @todoable = Todoable::Todoable.new("user", "password")
+    @todoable = Todoable::Todoable.new
 
     # Stub the request to the auth endpoint that is needed by all
     # other tests in this class
     stub_request(:post, @todoable.api_uri(Todoable::AUTH_PATH))
       .with(headers: default_headers)
       .to_return(body: '{ "token": "token" }')
+
+    # Perform authentication to save the token within an attribute of
+    # the `@todoable` instance
+    @todoable.authenticate "user", "password"
   end
 
   it "Enumerates items from a list" do
