@@ -28,9 +28,34 @@ class LoginForm < Gtk::Box
     add_ui_elements
   end
 
+  def report_error message
+    set_sensitive true
+    @spinner.stop
+    @errorlabel.text = message
+    @errorbar.set_no_show_all false
+    @errorbar.show_all
+    @errorbar.visible = true
+  end
+
+  def success
+    set_sensitive true
+    @spinner.stop
+    @username.text = ''
+    @password.text = ''
+    @errorbar.hide
+  end
+
+  private
+
   # Default handler for the `connect_bt_clicked` signal. Override with
   # `signal_connect` on your instance
   def signal_do_connect_bt_clicked username, password
+  end
+
+  def do_login
+    set_sensitive false
+    @spinner.start
+    signal_emit("connect_bt_clicked", @username.text, @password.text)
   end
 
   def add_ui_elements
@@ -77,20 +102,5 @@ class LoginForm < Gtk::Box
       :padding => 0,
     )
     pack_end @errorbar, :expand => false
-  end
-
-  def do_login
-    set_sensitive false
-    @spinner.start
-    signal_emit("connect_bt_clicked", @username.text, @password.text)
-  end
-
-  def report_error message
-    set_sensitive true
-    @spinner.stop
-    @errorlabel.text = message
-    @errorbar.set_no_show_all false
-    @errorbar.show_all
-    @errorbar.visible = true
   end
 end
