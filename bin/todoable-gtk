@@ -8,6 +8,7 @@ require "thread"
 require "todoable"
 
 require "todoable/ui/gtk/loginform"
+require "todoable/ui/gtk/mainpanel"
 
 class Window < Gtk::Window
   def initialize
@@ -19,27 +20,24 @@ class Window < Gtk::Window
     set_window_position :center
     signal_connect("destroy") { Gtk.main_quit }
 
-    # Application UI State
-    @state = state_defaults
-
     # Populate window with internal UI elements
-    @mainpanel = nil
     add_ui_elements
   end
 
-  def state_defaults
-    return {
-      'connected' => false,
-    }
-  end
+  private
 
   def add_ui_elements
-    add LoginForm.new
+    add MainPanel.new
   end
 end
 
 
 if $0 == __FILE__
+  # Without this line InfoBar will not show after it's shown for the
+  # first time and hidden again.
+  # https://bugzilla.gnome.org/show_bug.cgi?id=710888
+  #Gtk::Settings.default.set_property "gtk-enable-animations", false
+
   # Show the whole thing
   Window.new.show_all
 
