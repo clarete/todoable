@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+
+$:.unshift(File.dirname(__FILE__) + '/../lib') unless
+  $:.include?(File.dirname(__FILE__) + '/../lib')
+
+require "gtk3"
+require "thread"
+require "todoable"
+
+require "todoable/ui/gtk/loginform"
+
+class Window < Gtk::Window
+  def initialize
+    super :toplevel
+
+    # Define window properties
+    set_title "Todoable"
+    set_default_size 500, 200
+    set_window_position :center
+    signal_connect("destroy") { Gtk.main_quit }
+
+    # Application UI State
+    @state = state_defaults
+
+    # Populate window with internal UI elements
+    @mainpanel = nil
+    add_ui_elements
+  end
+
+  def state_defaults
+    return {
+      'connected' => false,
+    }
+  end
+
+  def add_ui_elements
+    add LoginForm.new
+  end
+end
+
+
+if $0 == __FILE__
+  # Show the whole thing
+  Window.new.show_all
+
+  # Gtk probably doesn't know how to present its windows on macos,
+  # thus here's some feedback on the terminal
+  puts "The Todoable window application might already be open'"
+  puts "please Cmd-Tab and go to the 'exec' window"
+
+  Gtk.main
+end
