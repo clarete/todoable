@@ -95,7 +95,7 @@ RSpec.describe "Authentication" do
     # And given that the lists endpoint is also stubbed
     stub_request(:get, todoable.api_uri(Todoable::LISTS_PATH))
       .with(headers: auth_headers('Very Secret Token'))
-      .to_return(body: '[]')
+      .to_return(body: '{"lists": []}')
 
     # When the authentication is performed
     todoable.authenticate "user", "password"
@@ -131,7 +131,7 @@ RSpec.describe "Lists" do
     # Given that the lists endpoint is stubbed to return no lists
     stub_request(:get, @todoable.api_uri(Todoable::LISTS_PATH))
       .with(headers: auth_headers('token'))
-      .to_return(body: '[]')
+      .to_return(body: '{"lists": []}')
 
     # When it tries to retrieve lists
     lists = @todoable.lists()
@@ -144,9 +144,10 @@ RSpec.describe "Lists" do
     # Given that the lists endpoint is stubbed to return a single list
     stub_request(:get, @todoable.api_uri(Todoable::LISTS_PATH))
       .with(headers: auth_headers('token'))
-      .to_return(body: '[{"name": "Urgent Things",' \
-                       '  "src":  "http://todoable.teachable.tech/api/lists/:list_id",' \
-                       '  "id":  44}]')
+      .to_return(body: {"lists" => [
+                          {"name" => "Urgent Things",
+                           "src" =>  "http://todoable.teachable.tech/api/lists/ae1334-a31fce",
+                           "id":  "ae1334-a31fce"}]}.to_json)
 
     # When it tries to retrieve lists
     lists = @todoable.lists()
@@ -155,8 +156,8 @@ RSpec.describe "Lists" do
     expect(lists.length).to eql(1)
     expect(lists[0]).to be_instance_of(Todoable::List)
     expect(lists[0].name).to eql("Urgent Things")
-    expect(lists[0].src).to eql("http://todoable.teachable.tech/api/lists/:list_id")
-    expect(lists[0].id).to eql(44)
+    expect(lists[0].src).to eql("http://todoable.teachable.tech/api/lists/ae1334-a31fce")
+    expect(lists[0].id).to eql("ae1334-a31fce")
   end
 
   it "create new lists" do

@@ -100,7 +100,9 @@ module Todoable
     end
 
     def lists
-      request!("get", LISTS_PATH).collect {|json_list| List.new(self, json_list) }
+      request!("get", LISTS_PATH)["lists"].collect { |json_list|
+        List.new(self, json_list)
+      }
     end
 
     def new_list(name)
