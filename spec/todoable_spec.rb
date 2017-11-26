@@ -156,7 +156,6 @@ RSpec.describe "Lists" do
     expect(lists.length).to eql(1)
     expect(lists[0]).to be_instance_of(Todoable::List)
     expect(lists[0].name).to eql("Urgent Things")
-    expect(lists[0].src).to eql("http://todoable.teachable.tech/api/lists/ae1334-a31fce")
     expect(lists[0].id).to eql("ae1334-a31fce")
   end
 
@@ -179,15 +178,15 @@ RSpec.describe "Lists" do
 
   it "updates a list" do
     # Given a list
+    uri = @todoable.api_uri(Todoable::LIST_PATH, {:list_id => 42})
     list = Todoable::List.new @todoable, {
       'name' => 'foo',
-      'src' => @todoable.api_uri(Todoable::LIST_PATH, {:list_id => 42}),
       'id' => 42
     }
 
     # And given that the method PATCH of the lists endpoint is stubbed
     # like the following:
-    stub_request(:patch, list.src)
+    stub_request(:patch, uri)
       .with(headers: auth_headers('token'))
       .to_return(status: 200)
 
@@ -197,22 +196,19 @@ RSpec.describe "Lists" do
     # Then it's expected that the endpoint that updates lists is hit
     # with the right payload
     expect(WebMock).to(
-      have_requested(:patch, list.src).with(
+      have_requested(:patch, uri).with(
         headers: auth_headers('token'),
         body: {"list": {"name": "bar"}}.to_json))
   end
 
   it "deletes a list" do
     # Given a list
-    list = Todoable::List.new @todoable, {
-      'name' => 'foo',
-      'src' => @todoable.api_uri(Todoable::LIST_PATH, {:list_id => 42}),
-      'id' => 42
-    }
+    uri = @todoable.api_uri(Todoable::LIST_PATH, {:list_id => 42})
+    list = Todoable::List.new @todoable, {'name' => 'foo', 'id' => 42}
 
     # And given that the method DELETE of the lists endpoint is stubbed
     # like the following:
-    stub_request(:delete, list.src)
+    stub_request(:delete, uri)
       .with(headers: auth_headers('token'))
       .to_return(status: 200)
 
@@ -221,7 +217,7 @@ RSpec.describe "Lists" do
 
     # Then it's expected to hit the API in the right endpoint
     expect(WebMock).to(
-      have_requested(:delete, list.src).with(headers: auth_headers('token')))
+      have_requested(:delete, uri).with(headers: auth_headers('token')))
   end
 end
 
@@ -243,15 +239,12 @@ RSpec.describe "List Items" do
 
   it "Enumerates items from a list" do
     # Given a list
-    list = Todoable::List.new @todoable, {
-      'name' => "Urgent Things",
-      'src' => @todoable.api_uri(Todoable::LIST_PATH, {:list_id => 42}),
-      'id' => 42
-    }
+    uri = @todoable.api_uri(Todoable::LIST_PATH, {:list_id => 42})
+    list = Todoable::List.new @todoable, {'name' => "Urgent Things", 'id' => 42}
 
     # And given that the method GET of the endpoint that lists items
     # is stubbed like the following:
-    stub_request(:get, list.src)
+    stub_request(:get, uri)
       .with(headers: auth_headers('token'))
       .to_return(status: 200, body: {
         "list" => {
@@ -259,13 +252,13 @@ RSpec.describe "List Items" do
           "items" => [{
             "name" => "Feed the cat",
             "finished_at" => nil,
-            "src" => "http://todoable.teachable.tech/api/lists/:list_id/items/:item_id",
-            "id" => 10
+            "src" => "http://todoable.teachable.tech/api/lists/1/items/10",
+            "id" => '10'
           }, {
             "name" => "Get cat food",
             "finished_at" => nil,
-            "src" => "http://todoable.teachable.tech/api/lists/:list_id/items/:item_id",
-            "id" => 20
+            "src" => "http://todoable.teachable.tech/api/lists/1/items/20",
+            "id" => '20'
           }]
         }
       }.to_json)
@@ -275,19 +268,17 @@ RSpec.describe "List Items" do
 
     # Then it's expected to hit the endpoint that lists items of a
     # list
-    expect(WebMock).to(
-      have_requested(:get, list.src).with(
-        headers: auth_headers('token')))
+    expect(WebMock).to have_requested(:get, uri).with(headers: auth_headers('token'))
 
     # And then the items list should contain two elements of the
     # Todoable::Item type
     expect(items.length).to eql(2)
     expect(items[0]).to be_instance_of(Todoable::Item)
     expect(items[0].name).to eql("Feed the cat")
-    expect(items[0].id).to eql(10)
+    expect(items[0].id).to eql('10')
     expect(items[1]).to be_instance_of(Todoable::Item)
     expect(items[1].name).to eql("Get cat food")
-    expect(items[1].id).to eql(20)
+    expect(items[1].id).to eql('20')
   end
 
   it "creates new items on a list" do

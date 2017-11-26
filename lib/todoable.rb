@@ -12,13 +12,11 @@ module Todoable
 
   class List
     attr_accessor :name
-    attr_accessor :src
     attr_accessor :id
 
     def initialize(todoable, params)
       @todoable = todoable
       @name = params['name']
-      @src = params['src']
       @id = params['id']
     end
 
