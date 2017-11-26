@@ -20,13 +20,11 @@ class ListsBox < Gtk::Box
       lists = @mainpanel.todoable.lists
       @mainpanel.jobqueue.push {
         @listview.clear
-        lists.each { |list| @listview.append list.id, list.name }
+        lists.each { |list| @listview.append list }
         finish_loading
       }
     end
   end
-
-  private
 
   def start_loading
     @spinner.start
@@ -38,12 +36,14 @@ class ListsBox < Gtk::Box
     set_sensitive true
   end
 
+  private
+
   def add_ui_elements
     # Add the toolbar
     pack_start Toolbar.new "Lists", @mainpanel
 
     # Add the list view
-    @listview = ListsTreeView.new
+    @listview = ListsTreeView.new self, @mainpanel
     pack_start @listview, :expand => true, :fill => true
 
     # Add the box that holds the button to create new lists and the
@@ -119,17 +119,20 @@ class NewListDialog < Gtk::Dialog
 end
 
 class ListsTreeView < Gtk::TreeView
-  COLUMN_ID = 0
-  COLUMN_NAME = 1
+  COLUMN_LIST = 0
+  COLUMN_ID = 1
+  COLUMN_NAME = 2
 
-  def initialize
-    @model = Gtk::ListStore.new String, String
+  def initialize listsbox, mainpanel
+    @model = Gtk::ListStore.new Object, String, String
     super @model
+    @listsbox = listsbox
+    @mainpanel = mainpanel
     setup_columns
   end
 
-  def append id, name
-    @model.append.set_values [id, name]
+  def append list
+    @model.append.set_values [list, list.id, list.name]
   end
 
   def clear
@@ -139,15 +142,39 @@ class ListsTreeView < Gtk::TreeView
   private
 
   def setup_columns
-    renderer0 = Gtk::CellRendererText.new
-    column0 = Gtk::TreeViewColumn.new "ID", renderer0, "text" => COLUMN_ID
-    column0.sort_column_id = COLUMN_ID
+    # The column that will store the Todoable::List instance
+    column0 = Gtk::TreeViewColumn.new "Instance", nil, "text" => COLUMN_LIST
     column0.set_visible false
     append_column column0
 
-    renderer1 = Gtk::CellRendererText.new
-    column1 = Gtk::TreeViewColumn.new "Name", renderer1, "text" => COLUMN_NAME
-    column1.sort_column_id = COLUMN_NAME
+    # The invisible column that holds the ID of the list
+    column1 = Gtk::TreeViewColumn.new "ID", nil, "text" => COLUMN_ID
+    column1.set_visible false
     append_column column1
+
+    # The column to display the name of the list
+    renderer2 = Gtk::CellRendererText.new
+    renderer2.set_editable true
+    renderer2.signal_connect("edited") { |_, path, new_name|
+      patch_list(path, new_name)
+    }
+    column2 = Gtk::TreeViewColumn.new "Name", renderer2, "text" => COLUMN_NAME
+    column2.sort_column_id = COLUMN_NAME
+    append_column column2
+  end
+
+  def patch_list path, new_name
+    iter = @model.get_iter path
+    list = @model.get_value iter, COLUMN_LIST
+    if list.name != new_name
+      @listsbox.start_loading
+      Thread.new do
+        list.update new_name
+        @mainpanel.jobqueue.push {
+          iter[COLUMN_NAME] = new_name
+          @listsbox.finish_loading
+        }
+      end
+    end
   end
 end
