@@ -199,6 +199,10 @@ RSpec.describe "Lists" do
       have_requested(:patch, uri).with(
         headers: auth_headers('token'),
         body: {"list": {"name": "bar"}}.to_json))
+
+    # And then the name attribute of the list instance also should be
+    # updated
+    expect(list.name).to eql "bar"
   end
 
   it "deletes a list" do

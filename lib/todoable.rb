@@ -23,6 +23,7 @@ module Todoable
     def update(name)
       body = {"list": {"name": name}}.to_json
       @todoable.request!("patch", LIST_PATH, { :list_id => @id }, body)
+      @name = name
     end
 
     def delete
