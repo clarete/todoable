@@ -10,7 +10,7 @@ class ListsBox < Gtk::Box
     @mainpanel = mainpanel
 
     # Populate widget with internal UI elements
-    @listview = nil
+    @listview = @spinner = nil
     add_ui_elements
   end
 
@@ -30,11 +30,13 @@ class ListsBox < Gtk::Box
   private
 
   def start_loading
+    @spinner.start
     set_sensitive false
     @listview.clear
   end
 
   def finish_loading
+    @spinner.stop
     set_sensitive true
   end
 
@@ -45,6 +47,15 @@ class ListsBox < Gtk::Box
     # Add the list view
     @listview = ListsTreeView.new
     pack_start @listview, :expand => true, :fill => true
+
+    # Add the box that holds the button to create new lists and the
+    # spinner
+    box = Gtk::Box.new :horizontal, 10
+    pack_end box, :padding => 10
+    add_button = Gtk::Button.new :label => "New List"
+    box.pack_start add_button
+    @spinner = Gtk::Spinner.new
+    box.pack_end @spinner, :padding => 10
   end
 end
 
