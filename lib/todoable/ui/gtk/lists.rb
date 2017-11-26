@@ -17,13 +17,12 @@ class ListsBox < Gtk::Box
   def load_lists
     start_loading
     Thread.new do
-      @mainpanel.todoable.lists.each do |list|
-        @mainpanel.jobqueue.push { @listview.append list.id, list.name }
-      end
-
-      # Our job here's done, let's make the treeview sensitive again
-      # so the user can interact with it
-      @mainpanel.jobqueue.push { finish_loading }
+      lists = @mainpanel.todoable.lists
+      @mainpanel.jobqueue.push {
+        @listview.clear
+        lists.each { |list| @listview.append list.id, list.name }
+        finish_loading
+      }
     end
   end
 
@@ -32,7 +31,6 @@ class ListsBox < Gtk::Box
   def start_loading
     @spinner.start
     set_sensitive false
-    @listview.clear
   end
 
   def finish_loading
