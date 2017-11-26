@@ -137,7 +137,16 @@ module Todoable
       # Perform request and collect response
       http = Net::HTTP.new(uri.host, uri.port)
       body = http.request(request).body
-      JSON.parse(body) if body != nil && !body.empty?
+
+      # Automatically convert to JSON if the output is
+      # convertible. The Web API unfortunately doesn't inform the
+      # right Content-Type header in the response, and some endpoints
+      # do not return JSON, thus the begin/rescue.
+      begin
+        JSON.parse(body) if body != nil && !body.empty?
+      rescue JSON::ParserError
+        body
+      end
     end
   end
 end

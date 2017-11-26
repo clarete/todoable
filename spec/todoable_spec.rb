@@ -188,7 +188,7 @@ RSpec.describe "Lists" do
     # like the following:
     stub_request(:patch, uri)
       .with(headers: auth_headers('token'))
-      .to_return(status: 200)
+      .to_return(status: 200, body: "bar updated")
 
     # When the list is updated
     list.update("bar")
