@@ -3,7 +3,12 @@ require 'gtk3'
 class Toolbar < Gtk::Box
   def initialize title, mainpanel
     super :horizontal, 10
+    @label = nil
     add_ui_elements title, mainpanel
+  end
+
+  def set_title title
+    @label.set_markup "<span font-weight='heavy' font='32'>#{title}</span>"
   end
 
   private

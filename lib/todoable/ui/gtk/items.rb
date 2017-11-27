@@ -4,24 +4,25 @@ require 'gtk3'
 require 'todoable/ui/gtk/toolbar'
 require 'todoable/ui/gtk/newitem'
 
-class ListsBox < Gtk::Box
+class ItemsBox < Gtk::Box
   def initialize mainpanel
     super :vertical
     set_margin 10
     @mainpanel = mainpanel
 
     # Populate widget with internal UI elements
-    @listview = @spinner = nil
+    @listview = @toolbar = @spinner = nil
     add_ui_elements
   end
 
-  def load_lists
+  def load_items
     start_loading
+    @toolbar.set_title @mainpanel.selected.name
     Thread.new do
-      lists = @mainpanel.todoable.lists
+      items = @mainpanel.selected.items
       @mainpanel.jobqueue.push {
         @listview.clear
-        lists.each { |list| @listview.append list }
+        items.each { |item| @listview.append item }
         finish_loading
       }
     end
@@ -41,25 +42,29 @@ class ListsBox < Gtk::Box
 
   def add_ui_elements
     # Add the toolbar
-    pack_start Toolbar.new "Lists", @mainpanel
+    @toolbar = Toolbar.new "Items", @mainpanel
+    pack_start @toolbar
 
     # Add the list view
-    @listview = ListsTreeView.new self, @mainpanel
+    @listview = ItemsTreeView.new self, @mainpanel
     pack_start @listview, :expand => true, :fill => true
 
-    # Add the box that holds the button to create new lists and the
-    # spinner
+    # Box that holds buttons & spinner
     box = Gtk::Box.new :horizontal, 10
     pack_end box, :padding => 10
-    add_button = Gtk::Button.new :label => "New List"
-    add_button.signal_connect("clicked") { run_new_list_dialog }
+
+    # Button for adding new TODO items
+    add_button = Gtk::Button.new :label => "New TODO Item"
+    add_button.signal_connect("clicked") { run_new_item_dialog }
     box.pack_start add_button
+
+    # Spinner for showing loading status
     @spinner = Gtk::Spinner.new
     box.pack_end @spinner, :padding => 10
   end
 
-  def run_new_list_dialog
-    dialog = NewItemDialog.new @mainpanel.parent, "New List"
+  def run_new_item_dialog
+    dialog = NewItemDialog.new @mainpanel.parent, "New TODO Item"
     response = dialog.run_and_get_input
     dialog.destroy
 
@@ -68,32 +73,36 @@ class ListsBox < Gtk::Box
     if response != nil
       start_loading
       Thread.new do
-        @mainpanel.todoable.new_list response
-        load_lists
+        @mainpanel.selected.new_item response
+        load_items
       end
     end
   end
 end
 
-class ListsTreeView < Gtk::TreeView
-  COLUMN_LIST = 0
+class ItemsTreeView < Gtk::TreeView
+  COLUMN_INSTANCE = 0
   COLUMN_ID = 1
   COLUMN_NAME = 2
-  COLUMN_DELETE = 3
+  COLUMN_FINISHED = 3
+  COLUMN_FINISHED_BUTTON = 4
+  COLUMN_DELETE = 5
 
   def initialize listsbox, mainpanel
-    @model = Gtk::ListStore.new Object, String, String, String
+    @model = Gtk::ListStore.new Object, String, String, String, String, String
     super @model
     @listsbox = listsbox
     @mainpanel = mainpanel
     setup_columns
   end
 
-  def append list
+  def append item
     @model.append.set_values [
-      list,
-      list.id,
-      "<big>#{list.name}</big>",
+      item,
+      item.id,
+      "<big>#{item.name}</big>",
+      item.finished_at,
+      "emblem-ok-symbolic",
       "edit-delete-symbolic"
     ]
   end
@@ -105,33 +114,44 @@ class ListsTreeView < Gtk::TreeView
   private
 
   def setup_columns
-    # The column that will store the Todoable::List instance
-    column_list = Gtk::TreeViewColumn.new "Instance", nil, "text" => COLUMN_LIST
-    column_list.set_visible false
-    append_column column_list
+    # The column that will store the Todoable::Item instance
+    column_item = Gtk::TreeViewColumn.new "Instance", nil, "text" => COLUMN_INSTANCE
+    column_item.set_visible false
+    append_column column_item
 
-    # The invisible column that holds the ID of the list
+    # The invisible column that holds the ID of the item
     column_id = Gtk::TreeViewColumn.new "ID", nil, "text" => COLUMN_ID
     column_id.set_visible false
     append_column column_id
 
-    # The column to display the name of the list
+    # The column to display the name of the item
     renderer_name = Gtk::CellRendererText.new
     renderer_name.set_padding 5, 5
-    # renderer_name.set_editable true
-    # renderer_name.signal_connect("edited") { |_, path, new_name|
-    #   patch_list(path, new_name)
-    # }
     column_name = Gtk::TreeViewColumn.new "Name", renderer_name, "markup" => COLUMN_NAME
-    column_name.sort_column_id = COLUMN_NAME
     column_name.set_expand true
     append_column column_name
+
+    # The column to display the name of the finished date
+    renderer_finished = Gtk::CellRendererText.new
+    renderer_finished.set_padding 5, 5
+    column_finished = Gtk::TreeViewColumn.new "Finished", renderer_finished, "text" => COLUMN_FINISHED
+    column_finished.set_expand false
+    append_column column_finished
+
+    # The column to display the icon for finishing the item
+    renderer_finish = Gtk::CellRendererPixbuf.new
+    renderer_finish.set_padding 5, 5
+    column_finish = Gtk::TreeViewColumn.new(
+      "", renderer_finish,
+      "icon_name" => COLUMN_FINISHED_BUTTON)
+    column_finish.set_expand false
+    append_column column_finish
 
     # The column to display the delete icon
     renderer_delete = Gtk::CellRendererPixbuf.new
     renderer_delete.set_padding 5, 5
     column_delete = Gtk::TreeViewColumn.new(
-      "Delete", renderer_delete,
+      "", renderer_delete,
       "icon_name" => COLUMN_DELETE)
     column_delete.set_expand false
     append_column column_delete
@@ -139,45 +159,25 @@ class ListsTreeView < Gtk::TreeView
     # Let's not show the headers
     set_headers_visible false
 
-    # Handles the clicking on each row
+    # This will allow the delete icon to be activated with a single
+    # click
     set_activate_on_single_click true
     signal_connect("row-activated") { |w, path, column|
-      if column == column_delete
-        delete_list(path)
-      elsif column == column_name
-        # Ask the main panel to show the items from the selected list
-        # if the user clicks the column that contains the list name
-        list = @model.get_value(@model.get_iter(path), COLUMN_LIST)
-        @mainpanel.list_items(list)
-      end
+      delete_item(path) if column == column_delete
     }
   end
 
-  def delete_list path
+  def delete_item path
     iter = @model.get_iter path
-    list = @model.get_value iter, COLUMN_LIST
+    item = @model.get_value iter, COLUMN_INSTANCE
+
     @listsbox.start_loading
     Thread.new do
-      list.delete
+      item.delete
       @mainpanel.jobqueue.push {
         @model.remove iter
         @listsbox.finish_loading
       }
-    end
-  end
-
-  def patch_list path, new_name
-    iter = @model.get_iter path
-    list = @model.get_value iter, COLUMN_LIST
-    if list.name != new_name
-      @listsbox.start_loading
-      Thread.new do
-        list.update new_name
-        @mainpanel.jobqueue.push {
-          iter[COLUMN_NAME] = "<big>#{new_name}</big>"
-          @listsbox.finish_loading
-        }
-      end
     end
   end
 end
