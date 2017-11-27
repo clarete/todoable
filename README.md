@@ -13,7 +13,7 @@ wrapper, it also provides two other little niceties:
 
 ![GTK UI FTW!!!](https://github.com/clarete/todoable/blob/master/docs/screencap.gif?raw=true "Todoable-GTK")
 
-## Installation & Usage
+## Installation
 
 Before installing the ruby dependencies, you also need to have
 `libyaml`. `rspec` depends on it I believe. To get the tests running,
@@ -37,9 +37,9 @@ $ bundle exec install
 $ bundle exec rspec
 ```
 
-### Web API Examples
+## Web API Examples
 
-#### Authentication
+### Authentication
 
 The Todoable API requires authentication. That can be done by
 informing *user* and *password* to the constructor of the `Todoable`
@@ -55,7 +55,7 @@ If you call any other method from the `Todoable::Todoable` class
 without authenticating, the exception `NotAuthenticated` will be
 raised.
 
-#### Create new lists
+### Create new lists
 
 After instantiating an instance of the `Todoable::Todoable` class, a
 new list can be created like the following:
@@ -64,7 +64,7 @@ new list can be created like the following:
 todo.new_list("Fun things")
 ```
 
-#### Retrieve all lists
+### Retrieve all lists
 
 To retrieve all lists just use the `Todoable::Todoable.lists` method
 as following:
@@ -76,7 +76,7 @@ todo.lists()
 The output will be a Ruby list containing instances of the class
 `Todoable::List`.
 
-#### Update list title
+### Update list title
 
 After a list is created it's also possible to update its title. If you
 have a list instance acquired the `Todoable::Todoable::lists()`
@@ -91,7 +91,7 @@ todo.lists()[0].update('bar')
 puts todo.lists()[0].name # ===> bar
 ```
 
-#### Delete a list
+### Delete a list
 ```ruby
 todo = Todoable::Todoable.new
 todo.authenticate "user", "password"
@@ -104,7 +104,7 @@ todo.lists[0].delete
 todo.lists.length #=> 0
 ```
 
-#### Create a TODO item within a list
+### Create a TODO item within a list
 
 ```ruby
 todo = Todoable::Todoable.new
@@ -118,7 +118,7 @@ todo.lists[0].items.length #=> 1
 todo.lists[0].items[0].name #=> 'Reserve tickets'
 ```
 
-#### Base API URI
+### Base API URI
 
 If the `Todoable::Todoable` class is instantiated with no parameters,
 the base API URI defaults to `http://todoable.teachable.tech`. But if
@@ -135,7 +135,7 @@ todo0 = Todoable::Todoable.new
 todo1 = Todoable::Todoable.new "http://localhost:8080"
 ```
 
-### Documentation
+## Documentation
 
 This project uses [YARD](https://yardoc.org/) to generate a nice HTML
 output of the API documentation. It's indeed available online in the
@@ -146,7 +146,7 @@ here's how it can be generated locally as well:
 $ bundle exec rake yard
 ```
 
-### Local Server
+## Local Server
 
 The local server is a simple [Sinatra](sinatrarb.com/) application
 that offers all the endpoints that the remote API provides. It's very
@@ -156,30 +156,30 @@ useful for testing things locally. Here's how to run it:
 $ ./bin/localserver
 ```
 
-### Graphical User Interface
+## Graphical User Interface
 
-#### System dependency
+### System dependency
 
-##### Debian GNU/Linux & compatibles
+#### Debian GNU/Linux & compatibles
 ```bash
 $ sudo apt install libgtk-3-dev
 ```
-##### macos
+#### macos
 ```bash
 $ brew install gtk+3 hicolor-icon-theme
 ```
 
-#### Ruby dependencies
+### Ruby dependencies
 ```bash
 $ gem install gtk3
 ```
 
-#### See it running
+### See it running
 ```bash
 $ ./bin/todoable-gtk
 ```
 
-### API Coverage
+## API Coverage
 
 This gem exposes the following API endpoints:
 
@@ -192,6 +192,34 @@ This gem exposes the following API endpoints:
  * [X] POST   `/lists/:list_id/items`
  * [X] PUT    `/lists/:list_id/items/:item_id/finish`
  * [X] DELETE `/lists/:list_id/items/:item_id`
+
+## What could be better
+
+There are lots of things that could be better here. Just to enumerate
+a few things that come to my mind right now:
+
+1. Automatically refresh the token after it expires. The API could
+   save the user & password in private attributes within the
+   `Todoable::Todoable` class and just call the
+   `Todoable::Todoable#authenticate` method upon `401 Unauthorized`
+   errors.
+
+2. Integration tests. The whole API was done using TDD but the tests
+   used [WebMock](https://github.com/bblimke/webmock), which is great
+   but it doesn't give enough assurance compared to a few integration
+   tests.
+
+3. Taxonomy of the API. Since the API deals with very common
+   abstractions, the words used to represent them aren't totally
+   conflict free. Words like *list*, *item*, etc are way too common
+   and without proper context it's easy to confuse what the API
+   exposes with what ever other thing that uses these words.
+
+4. On the GUI side, the GTK framework is great but it does look alien
+   in *macos* systems. There's no integration with the menu bar, the
+   window isn't presented right after the command to start up the GUI
+   is executed, the key-bindings are **very** confusing since they are
+   inherited from the GNU/Linux version of GTK.
 
 ## Development
 
@@ -214,7 +242,7 @@ safe, welcoming space for collaboration, and contributors are expected
 to adhere to the [Contributor
 Covenant](http://contributor-covenant.org) code of conduct.
 
-## License: GPLv3
+## License: LGPLv3
 
 Copyright (C) 2017  Lincoln Clarete <lincoln@clarete.li>
 

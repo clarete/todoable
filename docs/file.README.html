@@ -76,7 +76,7 @@ how to  run it bellow the API documentation. Here&#39;s a tease:</p>
 <p><img
 src="https://github.com/clarete/todoable/blob/master/docs/screencap.gif?raw=true"></p>
 
-<h2 id="label-Installation+-26+Usage">Installation &amp; Usage</h2>
+<h2 id="label-Installation">Installation</h2>
 
 <p>Before installing the ruby dependencies, you also need to have
 <code>libyaml</code>. <code>rspec</code> depends on it I believe. To get
@@ -100,9 +100,9 @@ macos</p>
 <pre class="code ruby"><code class="ruby">$ bundle exec install
 $ bundle exec rspec</code></pre>
 
-<h3 id="label-Web+API+Examples">Web API Examples</h3>
+<h2 id="label-Web+API+Examples">Web API Examples</h2>
 
-<h4 id="label-Authentication">Authentication</h4>
+<h3 id="label-Authentication">Authentication</h3>
 
 <p>The Todoable API requires authentication. That can be done by informing
 <em>user</em> and <em>password</em> to the constructor of the
@@ -117,7 +117,7 @@ $ bundle exec rspec</code></pre>
 without authenticating, the exception <code>NotAuthenticated</code> will be
 raised.</p>
 
-<h4 id="label-Create+new+lists">Create new lists</h4>
+<h3 id="label-Create+new+lists">Create new lists</h3>
 
 <p>After instantiating an instance of the <code>Todoable::Todoable</code>
 class, a new list can be created like the following:</p>
@@ -125,7 +125,7 @@ class, a new list can be created like the following:</p>
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_todo'>todo</span><span class='period'>.</span><span class='id identifier rubyid_new_list'>new_list</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Fun things</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 </code></pre>
 
-<h4 id="label-Retrieve+all+lists">Retrieve all lists</h4>
+<h3 id="label-Retrieve+all+lists">Retrieve all lists</h3>
 
 <p>To retrieve all lists just use the <code>Todoable::Todoable.lists</code>
 method as following:</p>
@@ -136,7 +136,7 @@ method as following:</p>
 <p>The output will be a Ruby list containing instances of the class
 <code>Todoable::List</code>.</p>
 
-<h4 id="label-Update+list+title">Update list title</h4>
+<h3 id="label-Update+list+title">Update list title</h3>
 
 <p>After a list is created it&#39;s also possible to update its title. If you
 have a list instance acquired the <code>Todoable::Todoable::lists()</code>
@@ -150,7 +150,7 @@ passing the new name as the only parameter:</p>
 <span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_todo'>todo</span><span class='period'>.</span><span class='id identifier rubyid_lists'>lists</span><span class='lparen'>(</span><span class='rparen'>)</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='comment'># ===&gt; bar
 </span></code></pre>
 
-<h4 id="label-Delete+a+list">Delete a list</h4>
+<h3 id="label-Delete+a+list">Delete a list</h3>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_todo'>todo</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Todoable.html" title="Todoable (module)">Todoable</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Todoable/Todoable.html" title="Todoable::Todoable (class)">Todoable</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Todoable/Todoable.html#initialize-instance_method" title="Todoable::Todoable#initialize (method)">new</a></span></span>
 <span class='id identifier rubyid_todo'>todo</span><span class='period'>.</span><span class='id identifier rubyid_authenticate'>authenticate</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>user</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>password</span><span class='tstring_end'>&quot;</span></span>
@@ -163,7 +163,7 @@ passing the new name as the only parameter:</p>
 <span class='id identifier rubyid_todo'>todo</span><span class='period'>.</span><span class='id identifier rubyid_lists'>lists</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='comment'>#=&gt; 0
 </span></code></pre>
 
-<h4 id="label-Create+a+TODO+item+within+a+list">Create a TODO item within a list</h4>
+<h3 id="label-Create+a+TODO+item+within+a+list">Create a TODO item within a list</h3>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_todo'>todo</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Todoable.html" title="Todoable (module)">Todoable</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Todoable/Todoable.html" title="Todoable::Todoable (class)">Todoable</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Todoable/Todoable.html#initialize-instance_method" title="Todoable::Todoable#initialize (method)">new</a></span></span>
 <span class='id identifier rubyid_todo'>todo</span><span class='period'>.</span><span class='id identifier rubyid_authenticate'>authenticate</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>user</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>password</span><span class='tstring_end'>&quot;</span></span>
@@ -176,7 +176,7 @@ passing the new name as the only parameter:</p>
 </span><span class='id identifier rubyid_todo'>todo</span><span class='period'>.</span><span class='id identifier rubyid_lists'>lists</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_items'>items</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='comment'>#=&gt; &#39;Reserve tickets&#39;
 </span></code></pre>
 
-<h4 id="label-Base+API+URI">Base API URI</h4>
+<h3 id="label-Base+API+URI">Base API URI</h3>
 
 <p>If the <code>Todoable::Todoable</code> class is instantiated with no
 parameters, the base API URI defaults to
@@ -193,7 +193,7 @@ target:</p>
 </span><span class='id identifier rubyid_todo1'>todo1</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Todoable.html" title="Todoable (module)">Todoable</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Todoable/Todoable.html" title="Todoable::Todoable (class)">Todoable</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Todoable/Todoable.html#initialize-instance_method" title="Todoable::Todoable#initialize (method)">new</a></span></span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>http://localhost:8080</span><span class='tstring_end'>&quot;</span></span>
 </code></pre>
 
-<h3 id="label-Documentation">Documentation</h3>
+<h2 id="label-Documentation">Documentation</h2>
 
 <p>This project uses <a href="https://yardoc.org/">YARD</a> to generate a nice
 HTML output of the API documentation. It&#39;s indeed available online in
@@ -202,7 +202,7 @@ project but here&#39;s how it can be generated locally as well:</p>
 
 <pre class="code ruby"><code class="ruby">$ bundle exec rake yard</code></pre>
 
-<h3 id="label-Local+Server">Local Server</h3>
+<h2 id="label-Local+Server">Local Server</h2>
 
 <p>The local server is a simple <a href="sinatrarb.com/">Sinatra</a>
 application that offers all the endpoints that the remote API provides.
@@ -210,27 +210,27 @@ It&#39;s very useful for testing things locally. Here&#39;s how to run it:</p>
 
 <pre class="code ruby"><code class="ruby">$ ./bin/localserver</code></pre>
 
-<h3 id="label-Graphical+User+Interface">Graphical User Interface</h3>
+<h2 id="label-Graphical+User+Interface">Graphical User Interface</h2>
 
-<h4 id="label-System+dependency">System dependency</h4>
+<h3 id="label-System+dependency">System dependency</h3>
 
-<h5 id="label-Debian+GNU-2FLinux+-26+compatibles">Debian GNU/Linux &amp; compatibles</h5>
+<h4 id="label-Debian+GNU-2FLinux+-26+compatibles">Debian GNU/Linux &amp; compatibles</h4>
 
 <pre class="code ruby"><code class="ruby">$ sudo apt install libgtk-3-dev</code></pre>
 
-<h5 id="label-macos">macos</h5>
+<h4 id="label-macos">macos</h4>
 
 <pre class="code ruby"><code class="ruby">$ brew install gtk+3 hicolor-icon-theme</code></pre>
 
-<h4 id="label-Ruby+dependencies">Ruby dependencies</h4>
+<h3 id="label-Ruby+dependencies">Ruby dependencies</h3>
 
 <pre class="code ruby"><code class="ruby">$ gem install gtk3</code></pre>
 
-<h4 id="label-See+it+running">See it running</h4>
+<h3 id="label-See+it+running">See it running</h3>
 
 <pre class="code ruby"><code class="ruby">$ ./bin/todoable-gtk</code></pre>
 
-<h3 id="label-API+Coverage">API Coverage</h3>
+<h2 id="label-API+Coverage">API Coverage</h2>
 
 <p>This gem exposes the following API endpoints:</p>
 <ul><li>
@@ -252,6 +252,34 @@ It&#39;s very useful for testing things locally. Here&#39;s how to run it:</p>
 </li><li>
 <p>[X] DELETE <code>/lists/:list_id/items/:item_id</code></p>
 </li></ul>
+
+<h2 id="label-What+could+be+better">What could be better</h2>
+
+<p>There are lots of things that could be better here. Just to enumerate a few
+things that come to my mind right now:</p>
+<ol><li>
+<p>Automatically refresh the token after it expires. The API could  save the
+user &amp; password in private attributes within the 
+<code>Todoable::Todoable</code> class and just call the 
+<code>Todoable::Todoable#authenticate</code> method upon <code>401
+Unauthorized</code>  errors.</p>
+</li><li>
+<p>Integration tests. The whole API was done using TDD but the tests  used <a
+href="https://github.com/bblimke/webmock">WebMock</a>, which is great  but
+it doesn&#39;t give enough assurance compared to a few integration  tests.</p>
+</li><li>
+<p>Taxonomy of the API. Since the API deals with very common  abstractions,
+the words used to represent them aren&#39;t totally  conflict free. Words
+like <em>list</em>, <em>item</em>, etc are way too common  and without
+proper context it&#39;s easy to confuse what the API  exposes with what
+ever other thing that uses these words.</p>
+</li><li>
+<p>On the GUI side, the GTK framework is great but it does look alien  in
+<em>macos</em> systems. There&#39;s no integration with the menu bar, the 
+window isn&#39;t presented right after the command to start up the GUI  is
+executed, the key-bindings are <strong>very</strong> confusing since they
+are  inherited from the GNU/Linux version of GTK.</p>
+</li></ol>
 
 <h2 id="label-Development">Development</h2>
 
@@ -276,7 +304,7 @@ and contributors are expected to adhere to the <a
 href="http://contributor-covenant.org">Contributor Covenant</a> code of
 conduct.</p>
 
-<h2 id="label-License-3A+GPLv3">License: GPLv3</h2>
+<h2 id="label-License-3A+LGPLv3">License: LGPLv3</h2>
 
 <p>Copyright (C) 2017 Lincoln Clarete <a
 href="mailto:lincoln@clarete.li">lincoln@clarete.li</a></p>
@@ -306,7 +334,7 @@ of conduct</a>.</p>
 </div></div>
 
       <div id="footer">
-  Generated on Mon Nov 27 02:01:09 2017 by
+  Generated on Mon Nov 27 02:44:54 2017 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.12 (ruby-2.4.2).
 </div>
