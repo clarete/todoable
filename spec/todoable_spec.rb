@@ -251,20 +251,18 @@ RSpec.describe "List Items" do
     stub_request(:get, uri)
       .with(headers: auth_headers('token'))
       .to_return(status: 200, body: {
-        "list" => {
-          "name" => "Urgent Things",
-          "items" => [{
-            "name" => "Feed the cat",
-            "finished_at" => nil,
-            "src" => "http://todoable.teachable.tech/api/lists/1/items/10",
-            "id" => '10'
-          }, {
-            "name" => "Get cat food",
-            "finished_at" => nil,
-            "src" => "http://todoable.teachable.tech/api/lists/1/items/20",
-            "id" => '20'
-          }]
-        }
+         "name" => "Urgent Things",
+         "items" => [{
+           "name" => "Feed the cat",
+           "finished_at" => nil,
+           "src" => "http://todoable.teachable.tech/api/lists/1/items/10",
+           "id" => '10'
+         }, {
+           "name" => "Get cat food",
+           "finished_at" => nil,
+           "src" => "http://todoable.teachable.tech/api/lists/1/items/20",
+           "id" => '20'
+         }]
       }.to_json)
 
     # When the items of a list are requested

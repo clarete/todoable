@@ -32,7 +32,7 @@ module Todoable
 
     def items
       output = @todoable.request!("get", LIST_PATH, { :list_id => @id })
-      output["list"]['items'].collect { |json_item|
+      output['items'].collect { |json_item|
         Item.new(@todoable, self, json_item)
       }
     end
