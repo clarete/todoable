@@ -11,7 +11,7 @@ wrapper, it also provides two other little niceties:
    GTK](http://ruby-gnome2.osdn.jp/). There are instructions in how to
    run it bellow the API documentation. Here's a tease:
 
-![GTK UI FTW!!!](/docs/screencap.gif "Todoable-GTK")
+![GTK UI FTW!!!](https://github.com/clarete/todoable/blob/master/docs/screencap.gif?raw=true "Todoable-GTK")
 
 ## Installation & Usage
 
@@ -139,8 +139,8 @@ todo1 = Todoable::Todoable.new "http://localhost:8080"
 
 This project uses [YARD](https://yardoc.org/) to generate a nice HTML
 output of the API documentation. It's indeed available online in the
-Github pages of this project but here's how it can be generated
-locally as well:
+[Github pages](https://clarete.github.io/todoable) of this project but
+here's how it can be generated locally as well:
 
 ```bash
 $ bundle exec rake yard
