@@ -136,7 +136,7 @@ class ListsTreeView < Gtk::TreeView
     @model.append.set_values [
       list,
       list.id,
-      list.name,
+      "<big>#{list.name}</big>",
       "edit-delete"
     ]
   end
@@ -165,7 +165,7 @@ class ListsTreeView < Gtk::TreeView
     renderer_name.signal_connect("edited") { |_, path, new_name|
       patch_list(path, new_name)
     }
-    column_name = Gtk::TreeViewColumn.new "Name", renderer_name, "text" => COLUMN_NAME
+    column_name = Gtk::TreeViewColumn.new "Name", renderer_name, "markup" => COLUMN_NAME
     column_name.sort_column_id = COLUMN_NAME
     column_name.set_expand true
     append_column column_name
@@ -212,7 +212,7 @@ class ListsTreeView < Gtk::TreeView
       Thread.new do
         list.update new_name
         @mainpanel.jobqueue.push {
-          iter[COLUMN_NAME] = new_name
+          iter[COLUMN_NAME] = "<big>#{new_name}</big>"
           @listsbox.finish_loading
         }
       end
