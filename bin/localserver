@@ -98,6 +98,20 @@ class LocalServer < Sinatra::Base
     "#{name} updated"
   end
 
+  ##
+  # Delete a list by its ID
+  #
+  # This gets rid of the two existing references that point to a list,
+  # in LISTS & LISTS_BY_ID
+
+  delete "/api/lists/:id" do
+    #throw(:halt, [401]) unless token_authorized?
+
+    LISTS_BY_ID.delete params[:id]
+    LISTS.delete_if { |l| l['id'] == params[:id] }
+    throw(:halt, [204])
+  end
+
   private
 
   ##
