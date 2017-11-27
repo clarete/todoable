@@ -2,20 +2,42 @@
 
 Access the Todoable API by teachable using this simple ruby library.
 
-## Usage
+Although the main goal of this project is to write a sleek API
+wrapper, it also provides two other little niceties:
 
-This gem isn't published anywhere, so the best way to use it is to
-clone this repository and run `bundle exec rake install`.
+1. A local server to allow testing to happen without hitting the
+   remote endpoint
+2. A Nice and smooth Graphical User Interface built with [Ruby
+   GTK](http://ruby-gnome2.osdn.jp/). There are instructions in how to
+   run it bellow the API documentation. Here's a tease:
 
-If you want to run the tests, execute `bundle exec rspec`.
+![GTK UI FTW!!!](/docs/screencap.gif "Todoable-GTK")
 
-### Dependencies
+## Installation & Usage
 
-All the ruby dependencies are described in the `gemspec` file, however
-you also need `libyaml` if you want to run the tests. If you are on
-*macos* you can run `brew install libyaml` and it will be alright.
+Before installing the ruby dependencies, you also need to have
+`libyaml`. `rspec` depends on it I believe. To get the tests running,
+run the following commands:
 
-### API
+### System dependency
+#### Debian GNU/Linux & compatibles
+```bash
+$ sudo apt install libyaml-dev
+```
+#### macos
+```bash
+$ brew install libyaml
+```
+### Install Ruby dependencies & run the tests
+
+The following commands will work in both Debian compatible systems and macos
+
+```bash
+$ bundle exec install
+$ bundle exec rspec
+```
+
+### Web API Examples
 
 #### Authentication
 
@@ -25,7 +47,6 @@ class:
 
 ```ruby
 require 'todoable'
-
 todo = Todoable::Todoable.new
 todo.authenticate "user", "password"
 ```
@@ -63,15 +84,38 @@ method, you can just call the method `Todoable::List::update()`
 passing the new name as the only parameter:
 
 ```ruby
-test_todo = Todoable::Todoable.new("user", "password")
-test_todo.new_list('foo')
+todo.new_list('foo')
+puts todo.lists()[0].name # ===> foo
 
-puts test_todo.lists()[0].name # ===> foo
+todo.lists()[0].update('bar')
+puts todo.lists()[0].name # ===> bar
+```
 
-test_todo.lists()[0].update('bar')
+#### Delete a list
+```ruby
+todo = Todoable::Todoable.new
+todo.authenticate "user", "password"
+todo.lists.length #=> 0
 
-puts test_todo.lists()[0].name # ===> bar
+todo.new_list 'foo'
+todo.lists.length #=> 1
 
+todo.lists[0].delete
+todo.lists.length #=> 0
+```
+
+#### Create a TODO item within a list
+
+```ruby
+todo = Todoable::Todoable.new
+todo.authenticate "user", "password"
+
+todo.new_list 'Plan vacation'
+todo.lists[0].items.length #=> 0
+
+todo.lists[0].new_item 'Reserve tickets'
+todo.lists[0].items.length #=> 1
+todo.lists[0].items[0].name #=> 'Reserve tickets'
 ```
 
 #### Base API URI
@@ -91,7 +135,51 @@ todo0 = Todoable::Todoable.new
 todo1 = Todoable::Todoable.new "http://localhost:8080"
 ```
 
-#### API Coverage
+### Documentation
+
+This project uses [YARD](https://yardoc.org/) to generate a nice HTML
+output of the API documentation. It's indeed available online in the
+Github pages of this project but here's how it can be generated
+locally as well:
+
+```bash
+$ bundle exec rake yard
+```
+
+### Local Server
+
+The local server is a simple [Sinatra](sinatrarb.com/) application
+that offers all the endpoints that the remote API provides. It's very
+useful for testing things locally. Here's how to run it:
+
+```bash
+$ ./bin/localserver
+```
+
+### Graphical User Interface
+
+#### System dependency
+
+##### Debian GNU/Linux & compatibles
+```bash
+$ sudo apt install libgtk-3-dev
+```
+##### macos
+```bash
+$ brew install gtk+3 hicolor-icon-theme
+```
+
+#### Ruby dependencies
+```bash
+$ gem install gtk3
+```
+
+#### See it running
+```bash
+$ ./bin/todoable-gtk
+```
+
+### API Coverage
 
 This gem exposes the following API endpoints:
 
@@ -126,10 +214,24 @@ safe, welcoming space for collaboration, and contributors are expected
 to adhere to the [Contributor
 Covenant](http://contributor-covenant.org) code of conduct.
 
-## License
+## License: GPLv3
 
-The gem is available as open source under the terms of the [MIT
-License](https://opensource.org/licenses/MIT).
+Copyright (C) 2017  Lincoln Clarete <lincoln@clarete.li>
+
+The project license is specified in COPYING and COPYING.LESSER.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License (LGPL) as
+published by the Free Software Foundation; either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Code of Conduct
 

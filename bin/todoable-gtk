@@ -4,27 +4,7 @@ $:.unshift(File.dirname(__FILE__) + '/../lib') unless
   $:.include?(File.dirname(__FILE__) + '/../lib')
 
 require "gtk3"
-require "thread"
-require "todoable"
-
-require "todoable/ui/gtk/loginform"
-require "todoable/ui/gtk/mainpanel"
-
-class Window < Gtk::Window
-  def initialize base_uri
-    super :toplevel
-
-    # Define window properties
-    set_title "Todoable"
-    set_default_size 500, 200
-    set_window_position :center
-    signal_connect("destroy") { Gtk.main_quit }
-
-    # Populate window with internal UI elements
-    add(MainPanel.new base_uri)
-  end
-end
-
+require "todoable/ui/gtk/window"
 
 if $0 == __FILE__
   # Without this line InfoBar will not show after it's shown for the
@@ -33,7 +13,7 @@ if $0 == __FILE__
   #Gtk::Settings.default.set_property "gtk-enable-animations", false
 
   # Show the whole thing
-  Window.new(ARGV[0]).show_all
+  Todoable::UI::Window.new(ARGV[0]).show_all
 
   # Gtk probably doesn't know how to present its windows on macos,
   # thus here's some feedback on the terminal
