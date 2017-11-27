@@ -259,7 +259,7 @@ RSpec.describe "List Items" do
            "id" => '10'
          }, {
            "name" => "Get cat food",
-           "finished_at" => nil,
+           "finished_at" => '2017-11-27T03:36:56Z',
            "src" => "http://todoable.teachable.tech/api/lists/1/items/20",
            "id" => '20'
          }]
@@ -278,9 +278,11 @@ RSpec.describe "List Items" do
     expect(items[0]).to be_instance_of(Todoable::Item)
     expect(items[0].name).to eql("Feed the cat")
     expect(items[0].id).to eql('10')
+    expect(items[0].finished_at).to eql(nil)
     expect(items[1]).to be_instance_of(Todoable::Item)
     expect(items[1].name).to eql("Get cat food")
     expect(items[1].id).to eql('20')
+    expect(items[1].finished_at).to eql('2017-11-27T03:36:56Z')
   end
 
   it "creates new items on a list" do

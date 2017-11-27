@@ -46,12 +46,14 @@ module Todoable
   class Item
     attr_accessor :name
     attr_accessor :id
+    attr_accessor :finished_at
 
     def initialize(todoable, list, params)
       @todoable = todoable
       @list = list
       @name = params['name']
       @id = params['id']
+      @finished_at = params['finished_at']
     end
 
     def mark_finished
