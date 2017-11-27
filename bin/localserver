@@ -18,6 +18,10 @@ class LocalServer < Sinatra::Base
 
   LISTS_BY_ID = {}
 
+  ITEMS = {}
+
+  ITEMS_BY_ID = {}
+
   ##
   # Authentication endpoint
   #
@@ -62,7 +66,7 @@ class LocalServer < Sinatra::Base
     content_type :json
 
     # Create new list structure
-    name = list_name_from_request
+    name = name_from_request "list"
     id = SecureRandom.uuid.to_s
     src = "#{settings.srvuri}/api/lists/#{id}"
     new_list = {'name' => name, 'id' => id, 'src' => src}
@@ -70,6 +74,7 @@ class LocalServer < Sinatra::Base
     # Save on the memory buffers
     LISTS << new_list
     LISTS_BY_ID[id] = new_list
+    ITEMS[id] = []
 
     # Return the created object to the user
     new_list.to_json
@@ -82,7 +87,9 @@ class LocalServer < Sinatra::Base
     #throw(:halt, [401]) unless token_authorized?
     content_type :json
     list = LISTS_BY_ID[params[:id]]
-    list.to_json
+    throw(:halt, [404]) if list == nil
+
+    {'name' => list['name'], 'items' => ITEMS[params[:id]] || []}.to_json
   end
 
   ##
@@ -90,11 +97,11 @@ class LocalServer < Sinatra::Base
 
   patch "/api/lists/:id" do
     #throw(:halt, [401]) unless token_authorized?
-
-    name = list_name_from_request
+    name = name_from_request "list"
     list = LISTS_BY_ID[params[:id]]
-    list['name'] = name
 
+    throw(:halt, [404]) if list == nil
+    list['name'] = name
     "#{name} updated"
   end
 
@@ -106,9 +113,66 @@ class LocalServer < Sinatra::Base
 
   delete "/api/lists/:id" do
     #throw(:halt, [401]) unless token_authorized?
+    throw(:halt, [404]) if LISTS_BY_ID[params[:id]] == nil
 
     LISTS_BY_ID.delete params[:id]
     LISTS.delete_if { |l| l['id'] == params[:id] }
+    throw(:halt, [204])
+  end
+
+  ##
+  # Create a new item within a list
+  #
+  # The payload has to contain the following structure:
+  #   {"item": {"name": "Urgent Things"}}
+  # Otherwise 422 is returned
+
+  post "/api/lists/:list_id/items" do
+    #throw(:halt, [401]) unless token_authorized?
+    content_type :json
+    list_id = params[:list_id]
+
+    # Create new list structure
+    name = name_from_request "item"
+    id = SecureRandom.uuid.to_s
+    src = "#{settings.srvuri}/api/lists/#{list_id}/items/#{id}"
+    new_item = {
+      'name' => name,
+      'id' => id,
+      'src' => src,
+      'finished_at' => nil,
+    }
+
+    # Save on the memory buffers
+    ITEMS[list_id] << new_item
+    ITEMS_BY_ID[id] = new_item
+
+    # Return the created object to the user
+    new_item.to_json
+  end
+
+  ##
+  # Mark a TODO item as finished
+
+  put "/api/lists/:list_id/items/:item_id/finish" do
+    #throw(:halt, [401]) unless token_authorized?
+    item = ITEMS_BY_ID[params[:item_id]]
+    throw(:halt, [404]) if item == nil
+
+    item['finished_at'] = Time.now.utc.iso8601
+    "#{item['name']} finished"
+  end
+
+  ##
+  # Delete a TODO item
+
+  delete "/api/lists/:list_id/items/:item_id" do
+    #throw(:halt, [401]) unless token_authorized?
+    throw(:halt, [404]) if LISTS_BY_ID[params[:list_id]] == nil
+    throw(:halt, [404]) if ITEMS_BY_ID[params[:item_id]] == nil
+
+    ITEMS_BY_ID.delete params[:item_id]
+    ITEMS[params[:list_id]].delete_if { |i| i['id'] == params[:item_id] }
     throw(:halt, [204])
   end
 
@@ -117,16 +181,16 @@ class LocalServer < Sinatra::Base
   ##
   # Parse list name for POST on /api/lists & PATCH on /api/lists/:list_id
 
-  def list_name_from_request
+  def name_from_request object_name
     begin
       json_body = JSON.parse request.body.read
     rescue JSON::ParserError
       throw(:halt, [422])
     end
-    if json_body['list'] == nil || json_body['list']['name'] == nil
+    if json_body[object_name] == nil || json_body[object_name]['name'] == nil
       throw(:halt, [422, {"name" => ["can't be blank"]}.to_json])
     end
-    json_body['list']['name']
+    json_body[object_name]['name']
   end
 
   ##
