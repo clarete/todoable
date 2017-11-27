@@ -11,8 +11,8 @@ class MainPanel < Gtk::Stack
   attr_accessor :todoable
   attr_accessor :selected
 
-  def initialize
-    super
+  def initialize base_uri
+    super()
 
     # Define stack properties
     set_transition_type :slide_up_down
@@ -20,7 +20,7 @@ class MainPanel < Gtk::Stack
     # Instance that updates the UI when threads have results to
     # present
     @jobqueue = JobQueue.new
-    @todoable = Todoable::Todoable.new "http://localhost:4567"
+    @todoable = Todoable::Todoable.new base_uri
 
     # This is the list that is currently selected. Defaults to no
     # lists and only gets set when the user clicks in one of the lists

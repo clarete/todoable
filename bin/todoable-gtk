@@ -11,7 +11,7 @@ require "todoable/ui/gtk/loginform"
 require "todoable/ui/gtk/mainpanel"
 
 class Window < Gtk::Window
-  def initialize
+  def initialize base_uri
     super :toplevel
 
     # Define window properties
@@ -21,13 +21,7 @@ class Window < Gtk::Window
     signal_connect("destroy") { Gtk.main_quit }
 
     # Populate window with internal UI elements
-    add_ui_elements
-  end
-
-  private
-
-  def add_ui_elements
-    add MainPanel.new
+    add(MainPanel.new base_uri)
   end
 end
 
@@ -39,7 +33,7 @@ if $0 == __FILE__
   #Gtk::Settings.default.set_property "gtk-enable-animations", false
 
   # Show the whole thing
-  Window.new.show_all
+  Window.new(ARGV[0]).show_all
 
   # Gtk probably doesn't know how to present its windows on macos,
   # thus here's some feedback on the terminal
