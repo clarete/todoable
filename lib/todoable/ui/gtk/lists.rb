@@ -79,10 +79,11 @@ class ListsTreeView < Gtk::TreeView
   COLUMN_LIST = 0
   COLUMN_ID = 1
   COLUMN_NAME = 2
-  COLUMN_DELETE = 3
+  COLUMN_EDIT = 3
+  COLUMN_DELETE = 4
 
   def initialize listsbox, mainpanel
-    @model = Gtk::ListStore.new Object, String, String, String
+    @model = Gtk::ListStore.new Object, String, String, String, String
     super @model
     @listsbox = listsbox
     @mainpanel = mainpanel
@@ -94,6 +95,7 @@ class ListsTreeView < Gtk::TreeView
       list,
       list.id,
       "<big>#{list.name}</big>",
+      "document-edit-symbolic",
       "edit-delete-symbolic"
     ]
   end
@@ -118,14 +120,18 @@ class ListsTreeView < Gtk::TreeView
     # The column to display the name of the list
     renderer_name = Gtk::CellRendererText.new
     renderer_name.set_padding 5, 5
-    # renderer_name.set_editable true
-    # renderer_name.signal_connect("edited") { |_, path, new_name|
-    #   patch_list(path, new_name)
-    # }
     column_name = Gtk::TreeViewColumn.new "Name", renderer_name, "markup" => COLUMN_NAME
-    column_name.sort_column_id = COLUMN_NAME
     column_name.set_expand true
     append_column column_name
+
+    # The column to display the edit icon
+    renderer_edit = Gtk::CellRendererPixbuf.new
+    renderer_edit.set_padding 5, 5
+    column_edit = Gtk::TreeViewColumn.new(
+      "Edit", renderer_edit,
+      "icon_name" => COLUMN_EDIT)
+    column_edit.set_expand false
+    append_column column_edit
 
     # The column to display the delete icon
     renderer_delete = Gtk::CellRendererPixbuf.new
@@ -142,20 +148,34 @@ class ListsTreeView < Gtk::TreeView
     # Handles the clicking on each row
     set_activate_on_single_click true
     signal_connect("row-activated") { |w, path, column|
-      if column == column_delete
-        delete_list(path)
-      elsif column == column_name
+      iter = @model.get_iter path
+      list = @model.get_value iter, COLUMN_LIST
+
+      if column == column_name
         # Ask the main panel to show the items from the selected list
         # if the user clicks the column that contains the list name
-        list = @model.get_value(@model.get_iter(path), COLUMN_LIST)
-        @mainpanel.list_items(list)
+        @mainpanel.list_items list
+      elsif column == column_edit
+        run_edit_dialog iter, list
+      elsif column == column_delete
+        delete_list iter, list
       end
     }
   end
 
-  def delete_list path
-    iter = @model.get_iter path
-    list = @model.get_value iter, COLUMN_LIST
+  def run_edit_dialog iter, list
+    dialog = NewItemDialog.new @mainpanel.parent, "Rename List", list.name
+    response = dialog.run_and_get_input
+    dialog.destroy
+
+    # Let's request creating a new list if the response contains
+    # anything usable as a name of a list
+    if response != nil && response != list.name
+      patch_list iter, list, response
+    end
+  end
+
+  def delete_list iter, list
     @listsbox.start_loading
     Thread.new do
       list.delete
@@ -166,18 +186,14 @@ class ListsTreeView < Gtk::TreeView
     end
   end
 
-  def patch_list path, new_name
-    iter = @model.get_iter path
-    list = @model.get_value iter, COLUMN_LIST
-    if list.name != new_name
-      @listsbox.start_loading
-      Thread.new do
-        list.update new_name
-        @mainpanel.jobqueue.push {
-          iter[COLUMN_NAME] = "<big>#{new_name}</big>"
-          @listsbox.finish_loading
-        }
-      end
+  def patch_list iter, list, new_name
+    @listsbox.start_loading
+    Thread.new do
+      list.update new_name
+      @mainpanel.jobqueue.push {
+        iter[COLUMN_NAME] = "<big>#{new_name}</big>"
+        @listsbox.finish_loading
+      }
     end
   end
 end

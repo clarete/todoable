@@ -1,7 +1,7 @@
 require 'gtk3'
 
 class NewItemDialog < Gtk::Dialog
-  def initialize parent, title
+  def initialize parent, title, default_text = ''
     super :parent => parent,
           :title => title,
           :flags => [:modal, :destroy_with_parent],
@@ -14,6 +14,7 @@ class NewItemDialog < Gtk::Dialog
     child.margin = 10
 
     # Populate widget with internal UI elements
+    @default_text = default_text
     @name_input = nil
     add_ui_elements
   end
@@ -27,6 +28,7 @@ class NewItemDialog < Gtk::Dialog
   def add_ui_elements
     # Entry that will receive the name of the new list from the user
     @name_input = Gtk::Entry.new
+    @name_input.text = @default_text
     @name_input.set_activates_default true
     @name_input.signal_connect("changed") { |w|
       set_response_sensitive Gtk::ResponseType::OK, w.text != ""
