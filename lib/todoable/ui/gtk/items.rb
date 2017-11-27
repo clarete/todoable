@@ -102,7 +102,7 @@ class ItemsTreeView < Gtk::TreeView
       item.id,
       "<big>#{item.name}</big>",
       item.finished_at,
-      "emblem-ok-symbolic",
+      item.finished_at == nil ? "emblem-ok-symbolic" : "",
       "edit-delete-symbolic"
     ]
   end
@@ -163,14 +163,26 @@ class ItemsTreeView < Gtk::TreeView
     # click
     set_activate_on_single_click true
     signal_connect("row-activated") { |w, path, column|
-      delete_item(path) if column == column_delete
+      iter = @model.get_iter path
+      if column == column_finish
+        mark_finished iter
+      elsif column == column_delete
+        delete_item iter
+      end
     }
   end
 
-  def delete_item path
-    iter = @model.get_iter path
+  def mark_finished iter
     item = @model.get_value iter, COLUMN_INSTANCE
+    @listsbox.start_loading
+    Thread.new do
+      item.mark_finished
+      @mainpanel.jobqueue.push { @listsbox.load_items }
+    end
+  end
 
+  def delete_item iter
+    item = @model.get_value iter, COLUMN_INSTANCE
     @listsbox.start_loading
     Thread.new do
       item.delete
