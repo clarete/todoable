@@ -122,9 +122,10 @@ class ListsTreeView < Gtk::TreeView
   COLUMN_LIST = 0
   COLUMN_ID = 1
   COLUMN_NAME = 2
+  COLUMN_DELETE = 3
 
   def initialize listsbox, mainpanel
-    @model = Gtk::ListStore.new Object, String, String
+    @model = Gtk::ListStore.new Object, String, String, String
     super @model
     @listsbox = listsbox
     @mainpanel = mainpanel
@@ -132,7 +133,12 @@ class ListsTreeView < Gtk::TreeView
   end
 
   def append list
-    @model.append.set_values [list, list.id, list.name]
+    @model.append.set_values [
+      list,
+      list.id,
+      list.name,
+      "edit-delete"
+    ]
   end
 
   def clear
@@ -143,24 +149,59 @@ class ListsTreeView < Gtk::TreeView
 
   def setup_columns
     # The column that will store the Todoable::List instance
-    column0 = Gtk::TreeViewColumn.new "Instance", nil, "text" => COLUMN_LIST
-    column0.set_visible false
-    append_column column0
+    column_list = Gtk::TreeViewColumn.new "Instance", nil, "text" => COLUMN_LIST
+    column_list.set_visible false
+    append_column column_list
 
     # The invisible column that holds the ID of the list
-    column1 = Gtk::TreeViewColumn.new "ID", nil, "text" => COLUMN_ID
-    column1.set_visible false
-    append_column column1
+    column_id = Gtk::TreeViewColumn.new "ID", nil, "text" => COLUMN_ID
+    column_id.set_visible false
+    append_column column_id
 
     # The column to display the name of the list
-    renderer2 = Gtk::CellRendererText.new
-    renderer2.set_editable true
-    renderer2.signal_connect("edited") { |_, path, new_name|
+    renderer_name = Gtk::CellRendererText.new
+    renderer_name.set_editable true
+    renderer_name.set_padding 5, 5
+    renderer_name.signal_connect("edited") { |_, path, new_name|
       patch_list(path, new_name)
     }
-    column2 = Gtk::TreeViewColumn.new "Name", renderer2, "text" => COLUMN_NAME
-    column2.sort_column_id = COLUMN_NAME
-    append_column column2
+    column_name = Gtk::TreeViewColumn.new "Name", renderer_name, "text" => COLUMN_NAME
+    column_name.sort_column_id = COLUMN_NAME
+    column_name.set_expand true
+    append_column column_name
+
+    # The column to display the delete icon
+    renderer_delete = Gtk::CellRendererPixbuf.new
+    renderer_delete.set_padding 5, 5
+    column_delete = Gtk::TreeViewColumn.new(
+      "Delete", renderer_delete,
+      "icon_name" => COLUMN_DELETE)
+    column_delete.set_expand false
+    append_column column_delete
+
+    # Let's not show the headers
+    set_headers_visible false
+
+    # This will allow the delete icon to be activated with a single
+    # click
+    set_activate_on_single_click true
+
+    signal_connect("row-activated") { |w, path, column|
+      delete_list(path) if column == column_delete
+    }
+  end
+
+  def delete_list path
+    iter = @model.get_iter path
+    list = @model.get_value iter, COLUMN_LIST
+    @listsbox.start_loading
+    Thread.new do
+      list.delete
+      @mainpanel.jobqueue.push {
+        @model.remove iter
+        @listsbox.finish_loading
+      }
+    end
   end
 
   def patch_list path, new_name
