@@ -54,7 +54,8 @@ class ItemsBox < Gtk::Box
     pack_end box, :padding => 10
 
     # Button for adding new TODO items
-    add_button = Gtk::Button.new :label => "New TODO Item"
+    add_button = Gtk::Button.new :label => "_New TODO Item"
+    add_button.set_use_underline true
     add_button.signal_connect("clicked") { run_new_item_dialog }
     box.pack_start add_button
 

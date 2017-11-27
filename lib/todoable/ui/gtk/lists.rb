@@ -51,7 +51,8 @@ class ListsBox < Gtk::Box
     # spinner
     box = Gtk::Box.new :horizontal, 10
     pack_end box, :padding => 10
-    add_button = Gtk::Button.new :label => "New List"
+    add_button = Gtk::Button.new :label => "_New List"
+    add_button.set_use_underline true
     add_button.signal_connect("clicked") { run_new_list_dialog }
     box.pack_start add_button
     @spinner = Gtk::Spinner.new
