@@ -41,7 +41,7 @@ class ListsBox < Gtk::Box
 
   def add_ui_elements
     # Add the toolbar
-    pack_start Toolbar.new "Lists", @mainpanel
+    pack_start Toolbar.new("Lists", @mainpanel), :padding => 10
 
     # Add the list view
     @listview = ListsTreeView.new self, @mainpanel

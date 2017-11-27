@@ -42,8 +42,8 @@ class ItemsBox < Gtk::Box
 
   def add_ui_elements
     # Add the toolbar
-    @toolbar = Toolbar.new "Items", @mainpanel
-    pack_start @toolbar
+    @toolbar = Toolbar.new "Items", @mainpanel, true
+    pack_start @toolbar, :padding => 10
 
     # Add the list view
     @listview = ItemsTreeView.new self, @mainpanel
